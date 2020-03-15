@@ -1,0 +1,10 @@
+name: Spleef
+main: com.javabean.spleef.Spleef
+author: JavaBean
+description: Allows admins to create Spleef arenas.
+version: 1.0
+api-version: 1.15
+commands:
+   spleef:
+      description: JavaBean Spleef command.
+      usage: /spleef
