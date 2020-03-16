@@ -350,10 +350,11 @@ public class TheSpleefCommand implements CommandExecutor{
 			if(arenaMap.get(args[2]) == null){
 				player.sendMessage(ChatColor.RED + "Arena: " + args[2] + " does not exist.");
 			}
-			//create sign where the player is looking at
+			//set spectate location
 			else{
 				Location loc = player.getLocation();
 				arenaMap.get(args[2]).setSpectateLocation(new Location(loc.getWorld(), loc.getBlockX() + 0.5, loc.getBlockY(), loc.getBlockZ() + 0.5));
+				player.sendMessage(ChatColor.GREEN + "Spectate position set for " + arenaMap.get(args[2]) + ".");
 			}
 		}
 		else{

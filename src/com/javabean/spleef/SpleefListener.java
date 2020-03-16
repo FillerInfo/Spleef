@@ -58,7 +58,7 @@ public class SpleefListener implements Listener{
 		Arena playerArena = gameManager.getPlayerGameArena(event.getPlayer());
 		if(playerArena != null){
 			Floor floor = playerArena.getFloorOfBlock(event.getBlock().getLocation());
-			if(floor != null && event.getBlock().getBlockData().getMaterial() == floor.getFloorMaterial()){
+			if(floor != null && event.getBlock().getBlockData().getMaterial() == floor.getFloorMaterial() && !gameManager.getGame(playerArena).isALoser(event.getPlayer().getName())){
 				event.setDropItems(false);
 				gameManager.getPlayerGameData(event.getPlayer(), playerArena).destroyBlock();
 			}
@@ -99,7 +99,7 @@ public class SpleefListener implements Listener{
 	public void onPlayerMove(PlayerMoveEvent event){
 		Arena playerArena = gameManager.getPlayerGameArena(event.getPlayer());
 		if(playerArena != null){
-			if(event.getPlayer().getLocation().getBlockY() < playerArena.getLowestFloorY()){
+			if(event.getPlayer().getLocation().getBlockY() < playerArena.getLowestFloorY() && !gameManager.getGame(playerArena).isALoser(event.getPlayer().getName())){
 				event.getPlayer().getInventory().clear();
 				event.getPlayer().teleport(playerArena.getSpectateLocation());
 				SpleefGame game = gameManager.getGame(playerArena);

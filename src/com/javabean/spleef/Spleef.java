@@ -185,7 +185,6 @@ public class Spleef extends JavaPlugin{
 										Double.parseDouble(specElement.getAttribute("z")),
 										Float.parseFloat(specElement.getAttribute("yaw")),
 										Float.parseFloat(specElement.getAttribute("pitch")));
-								System.out.println(spectateTeleport);
 							}
 						}
 						

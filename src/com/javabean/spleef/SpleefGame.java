@@ -269,7 +269,9 @@ public class SpleefGame{
 			}
 		}
 		
-		winner.setTimeLasted(timeElapsed);
+		if(winner != null){
+			winner.setTimeLasted(timeElapsed);
+		}
 		
 		for(String playerName : playerData.keySet()){
 			PlayerGameData playerGameData = playerData.get(playerName);
@@ -282,7 +284,12 @@ public class SpleefGame{
 			//notify players it's over and tell them about their team game stats and personal stats
 			player.sendMessage(ChatColor.GOLD + "--------------------------------------------");
 			player.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "              ***Game Stats***");
-			player.sendMessage(ChatColor.AQUA + winner.getPlayer().getName() + " won!");
+			if(winner != null){
+				player.sendMessage(ChatColor.AQUA + winner.getPlayer().getName() + " won!");
+			}
+			else{
+				player.sendMessage(ChatColor.RED + "Nobody won...");
+			}
 			player.sendMessage(ChatColor.GREEN + "You destroyed " + playerGameData.getBlocksDestroyed() + " blocks.");
 			player.sendMessage(ChatColor.GREEN + "Time lasted: " + secondsToWords(playerGameData.getTimeLasted()));
 			player.sendMessage(ChatColor.GOLD + "--------------------------------------------");
@@ -378,6 +385,10 @@ public class SpleefGame{
 		if(losers.size() == playerData.size() - 1){
 			end();
 		}
+	}
+	
+	public boolean isALoser(String playerName){
+		return losers.containsKey(playerName);
 	}
 	
 	public boolean isPlayerInGame(Player player){

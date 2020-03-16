@@ -29,7 +29,9 @@ public class SpleefCommandTabCompleter implements TabCompleter{
 				else if(args[0].equalsIgnoreCase("join")){
 					if(args.length > 1){
 						for(String arenaName : arenaMap.keySet()){
-							options.add(arenaName);
+							if(arenaName.startsWith(args[2])){
+								options.add(arenaName);
+							}
 						}
 					}
 				}

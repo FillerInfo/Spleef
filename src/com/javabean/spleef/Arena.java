@@ -65,20 +65,15 @@ public class Arena{
 	
 	public void addFloor(Floor floor){
 		floors.add(floor);
-		if(floor.getBounds()[0].getBlockY() < lowestFloorY){
-			lowestFloorY = floor.getBounds()[0].getBlockY();
-		}
-		if(floor.getBounds()[1].getBlockY() < lowestFloorY){
-			lowestFloorY = floor.getBounds()[1].getBlockY();
-		}
+		findLowestFloor();
 	}
 	
 	public void findLowestFloor(){
 		for(Floor floor : floors){
-			if(floor.getBounds()[0].getBlockY() < lowestFloorY){
+			if(floor.getBounds()[0] != null && floor.getBounds()[0].getBlockY() < lowestFloorY){
 				lowestFloorY = floor.getBounds()[0].getBlockY();
 			}
-			if(floor.getBounds()[1].getBlockY() < lowestFloorY){
+			if(floor.getBounds()[1] != null && floor.getBounds()[1].getBlockY() < lowestFloorY){
 				lowestFloorY = floor.getBounds()[1].getBlockY();
 			}
 		}
