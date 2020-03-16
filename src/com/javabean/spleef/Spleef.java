@@ -47,7 +47,7 @@ public class Spleef extends JavaPlugin{
 		
 		//creates commands
 		getCommand("spleef").setExecutor(new TheSpleefCommand(gameManager, arenaMap, this));
-//		getCommand("spleef").setTabCompleter(new SpleefCommandTabCompleter(gameManager, arenaMap));
+		getCommand("spleef").setTabCompleter(new SpleefCommandTabCompleter(arenaMap));
 		
 		//event listener
 		getServer().getPluginManager().registerEvents(new SpleefListener(gameManager, arenaMap), this);

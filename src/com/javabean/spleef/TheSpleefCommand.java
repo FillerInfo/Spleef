@@ -149,6 +149,9 @@ public class TheSpleefCommand implements CommandExecutor{
 			else if(args[1].equalsIgnoreCase("removespawn")){
 				removeSpawnSubCommand(player, commandSoFar + " " + args[1], args);
 			}
+			else if(args[1].equalsIgnoreCase("setspectate")){
+				setSpectateSubCommand(player, commandSoFar + " " + args[1], args);
+			}
 			else if(args[1].equalsIgnoreCase("createsign")){
 				createSignSubCommand(player, commandSoFar + " " + args[1], args);
 			}
@@ -331,6 +334,26 @@ public class TheSpleefCommand implements CommandExecutor{
 			else{
 				arenaMap.get(args[2]).removeSpawn(arenaMap.get(args[2]).getSpawn(args[3]));
 				player.sendMessage(ChatColor.GREEN + "You removed spawn: " + args[4] + " for team: " + args[3] + " for arena: " + args[2] + ".");
+			}
+		}
+		else{
+			player.sendMessage(ChatColor.RED + "Too many arguments specified for " + commandSoFar + " command.");
+		}
+	}
+	
+	private void setSpectateSubCommand(Player player, String commandSoFar, String[] args){
+		if(args.length == 2){
+			player.sendMessage(ChatColor.RED + "The " + commandSoFar + " command can have arguments: <arena name>.");
+		}
+		else if(args.length == 3){
+			//arena does not exist
+			if(arenaMap.get(args[2]) == null){
+				player.sendMessage(ChatColor.RED + "Arena: " + args[2] + " does not exist.");
+			}
+			//create sign where the player is looking at
+			else{
+				Location loc = player.getLocation();
+				arenaMap.get(args[2]).setSpectateLocation(new Location(loc.getWorld(), loc.getBlockX() + 0.5, loc.getBlockY(), loc.getBlockZ() + 0.5));
 			}
 		}
 		else{
