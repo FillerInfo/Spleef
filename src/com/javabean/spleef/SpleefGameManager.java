@@ -54,9 +54,9 @@ public class SpleefGameManager implements ActionListener{
 		else if(getPlayerGameArena(player) != null){
 			player.sendMessage(ChatColor.RED + "You are already in arena: " + arena.getName() + ". Leave with /spleef leave.");
 		}
-		//arena already has a game going
-		else if(isInProgress(arena)){
-			player.sendMessage(ChatColor.RED + "Arena: " + arena.getName() + " has a game in progress.");
+		//arena already has a game going or still setting up
+		else if(getGame(arena) != null && getGame(arena).hasGameEnded()){
+			player.sendMessage(ChatColor.RED + "Arena: " + arena.getName() + " has a game in progress or is being reset.");
 		}
 		else if(isFull(arena)){
 			player.sendMessage(ChatColor.RED + "Arena: " + arena.getName() + " is full (" + getGame(arena).getNumPlayers() + "/" + arena.getSpawns().size() + ").");

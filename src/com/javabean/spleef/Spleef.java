@@ -50,10 +50,7 @@ public class Spleef extends JavaPlugin{
 //		getCommand("spleef").setTabCompleter(new SpleefCommandTabCompleter(gameManager, arenaMap));
 		
 		//event listener
-//		getServer().getPluginManager().registerEvents(new CTFListener(gameManager, arenaMap), this);
-		
-		//THIS IS NOW DONE IN parseXMLGameData()
-		//hubSpawn = new Location(Bukkit.getServer().getWorlds().get(0), -285.5, 76.00, -132.5, 0, 0);
+		getServer().getPluginManager().registerEvents(new SpleefListener(gameManager, arenaMap), this);
 		
 		//plugin enabled successfully
 		getLogger().info("-----------------------");
@@ -175,8 +172,25 @@ public class Spleef extends JavaPlugin{
 							}
 						}
 						
+						NodeList spectateLocs = arenaElement.getElementsByTagName("spectate");
+						Location spectateTeleport = null;
+						for(int specIndex = 0; specIndex < spectateLocs.getLength(); specIndex++){
+							Node specNode = spectateLocs.item(specIndex);
+							if(specNode.getNodeType() == Node.ELEMENT_NODE){
+								Element specElement = (Element)specNode;
+								//new spawn created
+								spectateTeleport = new Location(world,
+										Double.parseDouble(specElement.getAttribute("x")),
+										Double.parseDouble(specElement.getAttribute("y")),
+										Double.parseDouble(specElement.getAttribute("z")),
+										Float.parseFloat(specElement.getAttribute("yaw")),
+										Float.parseFloat(specElement.getAttribute("pitch")));
+								System.out.println(spectateTeleport);
+							}
+						}
+						
 						//new arena created
-						arenaMap.put(arenaName, new Arena(arenaName, floors, spawns));
+						arenaMap.put(arenaName, new Arena(arenaName, floors, spawns, spectateTeleport));
 					}
 				}
 			}
@@ -249,6 +263,14 @@ public class Spleef extends JavaPlugin{
 					spawnElement.setAttribute("pitch", "" + spawn.getLocation().getPitch());
 					arenaElement.appendChild(spawnElement);
 				}
+				
+				Element spectateElement = doc.createElement("spectate");
+				spectateElement.setAttribute("x", "" + arena.getSpectateLocation().getX());
+				spectateElement.setAttribute("y", "" + arena.getSpectateLocation().getY());
+				spectateElement.setAttribute("z", "" + arena.getSpectateLocation().getZ());
+				spectateElement.setAttribute("yaw", "" + arena.getSpectateLocation().getYaw());
+				spectateElement.setAttribute("pitch", "" + arena.getSpectateLocation().getPitch());
+				arenaElement.appendChild(spectateElement);
 			}
 			
 			// write the content into xml file

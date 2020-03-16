@@ -24,15 +24,22 @@ public class SpleefGame{
 	//the plugin
 	private Plugin plugin;
 	
-	//there is a game going on, players may not join
+	//there is a game going on or game is being reset, players may not join
 	private boolean inProgress = false;
+	//game ended, game over for players
+	private boolean gameEnded = false;
+	
 	//time elapsed since game started
-	int timeElapsed = 0;
+	private int timeElapsed = 0;
 	//game length in seconds
-	int gameLength = 60;
+	//TODO change this to 5 minutes after testing
+	private int gameLength = 60;
 	
 	//map with player name and their data for that game
 	private HashMap<String, PlayerGameData> playerData = new HashMap<String, PlayerGameData>();
+	
+	//after losing, player name added here
+	private HashMap<String, Player> losers = new HashMap<String, Player>();
 	
 	public SpleefGame(Arena a, Plugin p){
 		arena = a;
@@ -50,8 +57,6 @@ public class SpleefGame{
 				makeSoundAtPlayers(Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 1.0f);
 				//end game
 				end();
-				//stop this BukkitRunnable
-				cancel();
 			}
 			//5 second countdown
 			else if(timeElapsed + 5 >= gameLength){
@@ -71,24 +76,24 @@ public class SpleefGame{
 	
 	//inner class for filling blocks
 	class BlockFiller extends BukkitRunnable{
-		Floor floor;
+		private Floor floor;
 		
 		//first corner is least X, Y, Z coord
 		private Location[] corners = new Location[2];
 		
 		//size of one layer of the floor along X, Z plane
-		Point floor2DSize;
+		private Point floor2DSize;
 		
 		//size of one subsection along X, Z plane
 		int dimension = 10;
 		
 		//how many (dimension * dimension) 2d sections of blocks that are filled every tick
-		Point filledCoords;
-		int floorsFilled = 0;
+		private Point filledCoords;
+		private int floorsFilled = 0;
 		//areas along edges that are not quite dimension * dimension in size
-		int xCount;
-		int zCount;
-		int floorHeight;
+		private int xCount;
+		private int zCount;
+		private int floorHeight;
 		
 		public BlockFiller(Floor f, boolean l){
 			floor = f;
@@ -139,6 +144,9 @@ public class SpleefGame{
 		@Override
 		public void run(){
 			if(floorsFilled == floorHeight){
+				//mark as not in progress anymore
+				inProgress = false;
+				
 				//stop this BukkitRunnable
 				cancel();
 				return;
@@ -232,7 +240,6 @@ public class SpleefGame{
 			PlayerGameData playerGameData = playerData.get(playerName);
 			Player player = playerGameData.getPlayer();
 			
-			//TODO teleport player to next available spawn
 			player.teleport(arena.getSpawns().get(playersSetup).getLocation());
 			
 			makeSoundAtPlayers(Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 1.0f);
@@ -240,6 +247,7 @@ public class SpleefGame{
 			player.getInventory().addItem(new ItemStack(Material.DIAMOND_SHOVEL, 1));
 			
 			player.setHealth(player.getMaxHealth());
+			playersSetup++;
 		}
 		//runs task immediately and every 20 ticks
 		gameTimer.runTaskTimer(plugin, 0, 20);
@@ -248,8 +256,21 @@ public class SpleefGame{
 	
 	@SuppressWarnings("deprecation")
 	public void end(){
+		gameEnded = true;
+		gameTimer.cancel();
 		notifyPlayers(ChatColor.AQUA + "Game ended in arena: " + arena.getName());
 		ArrayList<String> avoidModificationWhileIterating = new ArrayList<String>();
+		
+		PlayerGameData winner = null;
+		for(String playerName : playerData.keySet()){
+			if(!losers.containsKey(playerName)){
+				winner = playerData.get(playerName);
+				break;
+			}
+		}
+		
+		winner.setTimeLasted(timeElapsed);
+		
 		for(String playerName : playerData.keySet()){
 			PlayerGameData playerGameData = playerData.get(playerName);
 			Player player = playerGameData.getPlayer();
@@ -261,8 +282,9 @@ public class SpleefGame{
 			//notify players it's over and tell them about their team game stats and personal stats
 			player.sendMessage(ChatColor.GOLD + "--------------------------------------------");
 			player.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "              ***Game Stats***");
-			//TODO game stats
-			player.sendMessage(ChatColor.RED + "put stats here");
+			player.sendMessage(ChatColor.AQUA + winner.getPlayer().getName() + " won!");
+			player.sendMessage(ChatColor.GREEN + "You destroyed " + playerGameData.getBlocksDestroyed() + " blocks.");
+			player.sendMessage(ChatColor.GREEN + "Time lasted: " + secondsToWords(playerGameData.getTimeLasted()));
 			player.sendMessage(ChatColor.GOLD + "--------------------------------------------");
 			avoidModificationWhileIterating.add(playerName);
 			player.setHealth(player.getMaxHealth());
@@ -287,7 +309,15 @@ public class SpleefGame{
 		return secondsToWords(gameLength - timeElapsed);
 	}
 	
-	public String secondsToWords(int seconds){
+	public int getGameLength(){
+		return gameLength;
+	}
+	
+	public int getTimeElapsed(){
+		return timeElapsed;
+	}
+	
+	public static String secondsToWords(int seconds){
 		StringBuilder sb = new StringBuilder();
 		int hours = seconds / 3600;
 		if(hours > 0){
@@ -314,6 +344,10 @@ public class SpleefGame{
 		return inProgress;
 	}
 	
+	public boolean hasGameEnded(){
+		return gameEnded;
+	}
+	
 	public void playerJoin(Player player){
 		System.out.println(player.getName() + " joined " + arena.getName());
 		playerData.putIfAbsent(player.getName(), new PlayerGameData(player));
@@ -329,8 +363,21 @@ public class SpleefGame{
 		//send player back to location before game
 		player.teleport(playerData.get(player.getName()).getLocationBeforeGame());
 		playerData.remove(player.getName());
+		losers.remove(player.getName());
 		
 		SpleefGameManager.playersInArena.remove(player.getName());
+		
+		//all players left except 1
+		if(playerData.size() == 1 && !gameEnded){
+			end();
+		}
+	}
+	
+	public void addLoser(String playerName){
+		losers.put(playerName, playerData.get(playerName).getPlayer());
+		if(losers.size() == playerData.size() - 1){
+			end();
+		}
 	}
 	
 	public boolean isPlayerInGame(Player player){

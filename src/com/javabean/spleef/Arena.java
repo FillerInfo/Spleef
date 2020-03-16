@@ -5,6 +5,7 @@ import java.util.LinkedList;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
@@ -14,12 +15,16 @@ import org.bukkit.plugin.Plugin;
 
 import net.md_5.bungee.api.ChatColor;
 
-public class Arena {
+public class Arena{
 	private String arenaName;
 	private LinkedList<Floor> floors;
+	private int lowestFloorY = Integer.MAX_VALUE;
+	
 	//spawn name, Spawn
 	//used for O(1) get spawn
 	private LinkedList<Spawn> spawns;
+	
+	private Location spectateTeleport;
 	
 	//sign locations
 	private LinkedList<Location> signLocations = new LinkedList<Location>();
@@ -27,16 +32,18 @@ public class Arena {
 	public static Material[] wallSignTypes = {Material.OAK_WALL_SIGN, Material.ACACIA_WALL_SIGN, Material.BIRCH_WALL_SIGN, Material.DARK_OAK_WALL_SIGN, Material.JUNGLE_WALL_SIGN, Material.SPRUCE_WALL_SIGN};
 	
 	//for use with addarena
-	public Arena(String name){
+	public Arena(String name, World world){
 		//might need to add some default info to avoid errors later
-		this(name, new LinkedList<Floor>(), new LinkedList<Spawn>());
+		this(name, new LinkedList<Floor>(), new LinkedList<Spawn>(), new Location(world, 0, 0, 0));
 	}
 	
 	//loading from file
-	public Arena(String name, LinkedList<Floor> f, LinkedList<Spawn> s){
+	public Arena(String name, LinkedList<Floor> f, LinkedList<Spawn> s, Location spec){
 		arenaName = name;
 		floors = f;
+		findLowestFloor();
 		spawns = s;
+		spectateTeleport = spec;
 	}
 	
 	public String getName(){
@@ -58,6 +65,45 @@ public class Arena {
 	
 	public void addFloor(Floor floor){
 		floors.add(floor);
+		if(floor.getBounds()[0].getBlockY() < lowestFloorY){
+			lowestFloorY = floor.getBounds()[0].getBlockY();
+		}
+		if(floor.getBounds()[1].getBlockY() < lowestFloorY){
+			lowestFloorY = floor.getBounds()[1].getBlockY();
+		}
+	}
+	
+	public void findLowestFloor(){
+		for(Floor floor : floors){
+			if(floor.getBounds()[0].getBlockY() < lowestFloorY){
+				lowestFloorY = floor.getBounds()[0].getBlockY();
+			}
+			if(floor.getBounds()[1].getBlockY() < lowestFloorY){
+				lowestFloorY = floor.getBounds()[1].getBlockY();
+			}
+		}
+	}
+	
+	public boolean containsBlockInFloor(Location block){
+		for(Floor floor : floors){
+			if(floor.containsBlock(block)){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public Floor getFloorOfBlock(Location block){
+		for(Floor floor : floors){
+			if(floor.containsBlock(block)){
+				return floor;
+			}
+		}
+		return null;
+	}
+	
+	public int getLowestFloorY(){
+		return lowestFloorY;
 	}
 	
 	public LinkedList<Spawn> getSpawns(){
@@ -94,6 +140,14 @@ public class Arena {
 		return spawns.size();
 	}
 	
+	public Location getSpectateLocation(){
+		return spectateTeleport;
+	}
+	
+	public void setSpectateLocation(Location loc){
+		spectateTeleport = loc;
+	}
+	
 	public void createJoinSign(Player player, Plugin plugin){
 		if(createJoinSign(Spleef.getBlockLookingAt(player), plugin)){
 			player.sendMessage(ChatColor.GREEN + "Sign created successfully.");
@@ -127,7 +181,7 @@ public class Arena {
 		while(signIterator.hasNext()){
 			Location signLocation = signIterator.next();
 			if(lookingAt.getWorld().getName() == signLocation.getWorld().getName() && lookingAt.getX() == signLocation.getX() && lookingAt.getY() == signLocation.getY() && lookingAt.getZ() == signLocation.getZ()){
-				signLocation.getBlock().getState().removeMetadata("joinarena", plugin);
+				signLocation.getBlock().getState().removeMetadata("spleefarena", plugin);
 				signIterator.remove();
 			}
 		}

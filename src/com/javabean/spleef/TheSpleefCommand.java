@@ -173,7 +173,7 @@ public class TheSpleefCommand implements CommandExecutor{
 			//name is specified, location is set to player location by default
 			//arena does not exist yet, create it
 			if(arenaMap.get(args[1]) == null){
-				arenaMap.putIfAbsent(args[1], new Arena(args[1]));
+				arenaMap.putIfAbsent(args[1], new Arena(args[1], player.getWorld()));
 				player.sendMessage(ChatColor.GREEN + "You added an arena named: " + args[1] + ".");
 			}
 			else{

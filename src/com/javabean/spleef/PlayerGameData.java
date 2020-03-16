@@ -8,9 +8,9 @@ public class PlayerGameData{
 	private Location locationBeforeGame;
 	
 	//blocks of the floor destroyed
-//	private int blocksDestroyed = 0;
+	private int blocksDestroyed = 0;
 	//measured in game ticks
-//	private int timeLasted = 0;
+	private int timeLasted = 0;
 		
 	public PlayerGameData(Player p){
 		player = p;
@@ -23,5 +23,21 @@ public class PlayerGameData{
 	
 	public Location getLocationBeforeGame(){
 		return locationBeforeGame;
+	}
+	
+	public int getBlocksDestroyed(){
+		return blocksDestroyed;
+	}
+	
+	public void destroyBlock(){
+		blocksDestroyed++;
+	}
+	
+	public int getTimeLasted(){
+		return timeLasted;
+	}
+	
+	public void setTimeLasted(int time){
+		timeLasted = time;
 	}
 }
